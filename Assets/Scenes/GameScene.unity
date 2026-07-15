@@ -128,6 +128,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 126046833}
+  - component: {fileID: 126046834}
   m_Layer: 0
   m_Name: BoardRoot
   m_TagString: Untagged
@@ -152,6 +153,22 @@ Transform:
   - {fileID: 481769495}
   m_Father: {fileID: 1862870391}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &126046834
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 126046832}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77e3850e99a1424439557397fe529c22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CircuitRepair.Presentation.BoardPresenter
+  tilePrefab: {fileID: 3604067712117861291, guid: 521b8a5ecd04d214c828bb06c873e2ff, type: 3}
+  spriteLibrary: {fileID: 11400000, guid: 801b18feead66c44cb282c199e9604b2, type: 2}
+  tilesRoot: {fileID: 554168756}
+  tileSpacing: 1
 --- !u!1 &481769494
 GameObject:
   m_ObjectHideFlags: 0
@@ -444,6 +461,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1551093142}
+  - component: {fileID: 1551093143}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -466,6 +484,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1862870391}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1551093143
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1551093141}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2333579c351e712488d56a185e844698, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CircuitRepair.Gameplay.GameBootstrap
+  boardPresenter: {fileID: 126046834}
 --- !u!1 &1862870390
 GameObject:
   m_ObjectHideFlags: 0
