@@ -178,6 +178,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 481769495}
+  - component: {fileID: 481769496}
   m_Layer: 0
   m_Name: ConnectionVisuals
   m_TagString: Untagged
@@ -200,6 +201,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 126046833}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &481769496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 481769494}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 097470dbda3838e4ea484de473f69fa4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CircuitRepair.Presentation.BoardConnectionPresenter
+  solderJointPrefab: {fileID: 1946864660378722066, guid: 47a0fe78b7594b349bd730d3dca0c58d, type: 3}
+  connectionVisualsRoot: {fileID: 481769495}
+  boardPresenter: {fileID: 126046834}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -497,6 +513,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CircuitRepair.Input.BoardInputController
   worldCamera: {fileID: 519420031}
+  maxTapDuration: 0.5
 --- !u!1 &1551093141
 GameObject:
   m_ObjectHideFlags: 0
@@ -543,6 +560,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CircuitRepair.Gameplay.GameBootstrap
   boardPresenter: {fileID: 126046834}
+  boardConnectionPresenter: {fileID: 481769496}
   boardInputController: {fileID: 624369122}
 --- !u!1 &1862870390
 GameObject:

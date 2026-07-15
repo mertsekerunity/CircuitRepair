@@ -9,6 +9,7 @@ namespace CircuitRepair.Gameplay
     public sealed class GameBootstrap : MonoBehaviour
     {
         [SerializeField] private BoardPresenter boardPresenter;
+        [SerializeField] private BoardConnectionPresenter boardConnectionPresenter;
         [SerializeField] private BoardInputController boardInputController;
 
         private BoardController boardController;
@@ -20,20 +21,26 @@ namespace CircuitRepair.Gameplay
             ValidateReferences();
 
             Board = PrototypeBoardFactory.CreatePresentationTestBoard();
+
             boardPresenter.Present(Board);
+            boardConnectionPresenter.Present(Board);
 
             boardController = new BoardController(Board);
             boardController.TileRotated += boardPresenter.RefreshTile;
+            boardController.TileRotated += boardConnectionPresenter.RefreshAround;
 
             boardInputController.Initialize(boardController);
         }
 
         private void OnDestroy()
         {
-            if (boardController != null)
+            if (boardController == null)
             {
-                boardController.TileRotated -= boardPresenter.RefreshTile;
+                return;
             }
+
+            boardController.TileRotated -= boardPresenter.RefreshTile;
+            boardController.TileRotated -= boardConnectionPresenter.RefreshAround;
         }
 
         private void ValidateReferences()
@@ -41,6 +48,11 @@ namespace CircuitRepair.Gameplay
             if (boardPresenter == null)
             {
                 throw new InvalidOperationException($"{nameof(boardPresenter)} is not assigned in the Inspector.");
+            }
+
+            if (boardConnectionPresenter == null)
+            {
+                throw new InvalidOperationException($"{nameof(boardConnectionPresenter)} is not assigned in the Inspector.");
             }
 
             if (boardInputController == null)
