@@ -16,5 +16,22 @@ namespace CircuitRepair.Content
         public int Width => width;
         public int Height => height;
         public IReadOnlyList<TileDefinition> Tiles => tiles;
+
+        [ContextMenu("Validate Puzzle")]
+        private void ValidatePuzzle()
+        {
+            IReadOnlyList<string> errors = PuzzleDefinitionValidator.GetErrors(this);
+
+            if (errors.Count == 0)
+            {
+                Debug.Log($"Puzzle definition '{name}' is valid.", this);
+                return;
+            }
+
+            foreach (string error in errors)
+            {
+                Debug.LogError($"{name}: {error}", this);
+            }
+        }
     }
 }
