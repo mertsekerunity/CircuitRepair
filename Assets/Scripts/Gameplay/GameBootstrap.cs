@@ -77,6 +77,7 @@ namespace CircuitRepair.Gameplay
 
         private void HandlePuzzleSolved()
         {
+            boardController.SetInteractionEnabled(false);
             Debug.Log("Puzzle solved.");
         }
     }

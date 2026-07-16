@@ -8,6 +8,8 @@ namespace CircuitRepair.Gameplay
     {
         public BoardData Board { get; }
 
+        public bool IsInteractionEnabled { get; private set; } = true;
+
         public event Action<Vector2Int> TileRotated;
 
         public BoardController(BoardData board)
@@ -17,6 +19,11 @@ namespace CircuitRepair.Gameplay
 
         public bool TryRotateTile(Vector2Int position)
         {
+            if (!IsInteractionEnabled)
+            {
+                return false;
+            }
+
             if (!Board.TryGetTile(position, out TileData tile))
             {
                 return false;
@@ -31,6 +38,11 @@ namespace CircuitRepair.Gameplay
             TileRotated?.Invoke(position);
 
             return true;
+        }
+
+        public void SetInteractionEnabled(bool isEnabled)
+        {
+            IsInteractionEnabled = isEnabled;
         }
     }
 }
