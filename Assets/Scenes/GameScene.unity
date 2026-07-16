@@ -574,6 +574,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2333579c351e712488d56a185e844698, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CircuitRepair.Gameplay.GameBootstrap
+  puzzleDefinition: {fileID: 11400000, guid: f4f2ed8712e19704dbc03adb8589577b, type: 2}
   boardPresenter: {fileID: 126046834}
   boardConnectionPresenter: {fileID: 481769496}
   boardInputController: {fileID: 624369122}

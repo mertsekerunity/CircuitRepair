@@ -2,12 +2,16 @@ using System;
 using CircuitRepair.Core;
 using CircuitRepair.Input;
 using CircuitRepair.Presentation;
+using CircuitRepair.Content;
 using UnityEngine;
 
 namespace CircuitRepair.Gameplay
 {
     public sealed class GameBootstrap : MonoBehaviour
     {
+        [Header("Content")]
+        [SerializeField] private PuzzleDefinition puzzleDefinition;
+
         [SerializeField] private BoardPresenter boardPresenter;
         [SerializeField] private BoardConnectionPresenter boardConnectionPresenter;
         [SerializeField] private BoardInputController boardInputController;
@@ -22,7 +26,7 @@ namespace CircuitRepair.Gameplay
         {
             ValidateReferences();
 
-            Board = PrototypeBoardFactory.CreatePlayableTestBoard();
+            Board = PuzzleBoardFactory.Create(puzzleDefinition);
 
             boardPresenter.Present(Board);
             boardCameraFitter.Fit(boardPresenter);
@@ -78,6 +82,11 @@ namespace CircuitRepair.Gameplay
             if (boardCameraFitter == null)
             {
                 throw new InvalidOperationException($"{nameof(boardCameraFitter)} is not assigned in the Inspector.");
+            }
+
+            if (puzzleDefinition == null)
+            {
+                throw new InvalidOperationException($"{nameof(puzzleDefinition)} is not assigned in the Inspector.");
             }
         }
 
