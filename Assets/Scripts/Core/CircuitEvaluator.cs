@@ -28,6 +28,7 @@ namespace CircuitRepair.Core
             bool allBulbsPowered = true;
             bool allPortsConnected = true;
             int bulbCount = 0;
+            int tileCount = 0;
 
             for (int y = 0; y < board.Height; y++)
             {
@@ -39,6 +40,8 @@ namespace CircuitRepair.Core
                     {
                         continue;
                     }
+
+                    tileCount++;
 
                     if (tile.Type == TileType.Ground && poweredPositions.Contains(position))
                     {
@@ -67,7 +70,9 @@ namespace CircuitRepair.Core
                 allBulbsPowered = false;
             }
 
-            return new CircuitEvaluationResult(poweredPositions, groundReached, allBulbsPowered, allPortsConnected);
+            bool allTilesPowered = poweredPositions.Count == tileCount;
+
+            return new CircuitEvaluationResult(poweredPositions, groundReached, allBulbsPowered, allPortsConnected, allTilesPowered);
         }
 
         private static HashSet<Vector2Int> TraversePoweredNetwork(BoardData board, Vector2Int sourcePosition)

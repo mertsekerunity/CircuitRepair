@@ -125,5 +125,18 @@ namespace CircuitRepair.Presentation
                 throw new InvalidOperationException($"{nameof(tilesRoot)} is not assigned in the Inspector.");
             }
         }
+
+        public void RefreshPowerState(CircuitEvaluationResult result)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            foreach (KeyValuePair<Vector2Int, TileView> pair in tileViews)
+            {
+                pair.Value.SetPowered(result.IsPowered(pair.Key));
+            }
+        }
     }
 }

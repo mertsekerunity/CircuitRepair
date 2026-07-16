@@ -23,5 +23,24 @@ namespace CircuitRepair.Gameplay
 
             return board;
         }
+
+        public static BoardData CreatePlayableTestBoard()
+        {
+            BoardData board = new BoardData(3, 3);
+
+            board.SetTile(new TileData(new Vector2Int(0, 0), TileType.Source));
+            board.SetTile(new TileData(new Vector2Int(1, 0), TileType.Straight));
+            board.SetTile(new TileData(new Vector2Int(2, 0), TileType.Bend, TileRotation.Degrees270));
+
+            board.SetTile(new TileData(new Vector2Int(0, 1), TileType.Bend, TileRotation.Degrees180));
+            board.SetTile(new TileData(new Vector2Int(1, 1), TileType.Straight, TileRotation.Degrees90));
+            board.SetTile(new TileData(new Vector2Int(2, 1), TileType.Bend));
+
+            board.SetTile(new TileData(new Vector2Int(0, 2), TileType.Bend, TileRotation.Degrees90));
+            board.SetTile(new TileData(new Vector2Int(1, 2), TileType.Bulb));
+            board.SetTile(new TileData(new Vector2Int(2, 2), TileType.Ground));
+
+            return board;
+        }
     }
 }

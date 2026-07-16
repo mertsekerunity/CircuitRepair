@@ -22,6 +22,7 @@ namespace CircuitRepair.Debugging
             Check("Ground is reached", initialResult.GroundReached, true);
             Check("All bulbs are powered", initialResult.AllBulbsPowered, false);
             Check("All ports are connected", initialResult.AllPortsConnected, false);
+            Check("All tiles are powered", initialResult.AllTilesPowered, false);
             Check("Puzzle is solved", initialResult.IsSolved, false);
 
             Debug.Log("===== CIRCUIT EVALUATION AFTER ROTATION =====");
@@ -34,6 +35,7 @@ namespace CircuitRepair.Debugging
             Check("Middle straight is no longer powered", rotatedResult.IsPowered(new Vector2Int(1, 1)), false);
             Check("Ground is no longer powered", rotatedResult.IsPowered(new Vector2Int(2, 2)), false);
             Check("Ground is no longer reached", rotatedResult.GroundReached, false);
+            Check("All tiles remain unpowered", rotatedResult.AllTilesPowered, false);
             Check("Puzzle remains unsolved", rotatedResult.IsSolved, false);
         }
 

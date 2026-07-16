@@ -10,6 +10,10 @@ namespace CircuitRepair.Presentation
         [SerializeField] private Transform rotatingVisual;
         [SerializeField] private SpriteRenderer componentRenderer;
 
+        [Header("Power State")]
+        [SerializeField] private Color poweredColor = Color.white;
+        [SerializeField] private Color unpoweredColor = new Color(0.65f, 0.65f, 0.65f, 1f);
+
         private TileData data;
 
         public TileData Data => data;
@@ -58,6 +62,11 @@ namespace CircuitRepair.Presentation
             {
                 throw new InvalidOperationException($"{nameof(componentRenderer)} Not assigned in Inspector.");
             }
+        }
+
+        public void SetPowered(bool isPowered)
+        {
+            componentRenderer.color = isPowered ? poweredColor : unpoweredColor;
         }
     }
 }

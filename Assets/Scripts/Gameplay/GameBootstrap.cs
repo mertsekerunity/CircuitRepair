@@ -13,6 +13,7 @@ namespace CircuitRepair.Gameplay
         [SerializeField] private BoardInputController boardInputController;
 
         private BoardController boardController;
+        private CircuitController circuitController;
 
         public BoardData Board { get; private set; }
 
@@ -20,27 +21,40 @@ namespace CircuitRepair.Gameplay
         {
             ValidateReferences();
 
-            Board = PrototypeBoardFactory.CreatePresentationTestBoard();
+            //Board = PrototypeBoardFactory.CreatePresentationTestBoard();
+            Board = PrototypeBoardFactory.CreatePlayableTestBoard();
 
             boardPresenter.Present(Board);
             boardConnectionPresenter.Present(Board);
 
             boardController = new BoardController(Board);
+            circuitController = new CircuitController(Board);
+
             boardController.TileRotated += boardPresenter.RefreshTile;
             boardController.TileRotated += boardConnectionPresenter.RefreshAround;
+            boardController.TileRotated += circuitController.HandleTileRotated;
 
+            circuitController.EvaluationChanged += boardPresenter.RefreshPowerState;
+            circuitController.PuzzleSolved += HandlePuzzleSolved;
+
+            circuitController.Reevaluate();
             boardInputController.Initialize(boardController);
         }
 
         private void OnDestroy()
         {
-            if (boardController == null)
+            if (boardController != null)
             {
-                return;
+                boardController.TileRotated -= boardPresenter.RefreshTile;
+                boardController.TileRotated -= boardConnectionPresenter.RefreshAround;
+                boardController.TileRotated -= circuitController.HandleTileRotated;
             }
 
-            boardController.TileRotated -= boardPresenter.RefreshTile;
-            boardController.TileRotated -= boardConnectionPresenter.RefreshAround;
+            if (circuitController != null)
+            {
+                circuitController.EvaluationChanged -= boardPresenter.RefreshPowerState;
+                circuitController.PuzzleSolved -= HandlePuzzleSolved;
+            }
         }
 
         private void ValidateReferences()
@@ -59,6 +73,11 @@ namespace CircuitRepair.Gameplay
             {
                 throw new InvalidOperationException($"{nameof(boardInputController)} is not assigned in the Inspector.");
             }
+        }
+
+        private void HandlePuzzleSolved()
+        {
+            Debug.Log("Puzzle solved.");
         }
     }
 }
