@@ -1,8 +1,8 @@
 using System;
+using CircuitRepair.Content;
 using CircuitRepair.Core;
 using CircuitRepair.Input;
 using CircuitRepair.Presentation;
-using CircuitRepair.Content;
 using UnityEngine;
 
 namespace CircuitRepair.Gameplay
@@ -12,10 +12,11 @@ namespace CircuitRepair.Gameplay
         [Header("Content")]
         [SerializeField] private PuzzleDefinition puzzleDefinition;
 
+        [Header("Scene References")]
         [SerializeField] private BoardPresenter boardPresenter;
         [SerializeField] private BoardConnectionPresenter boardConnectionPresenter;
-        [SerializeField] private BoardInputController boardInputController;
         [SerializeField] private BoardCameraFitter boardCameraFitter;
+        [SerializeField] private BoardInputController boardInputController;
 
         private BoardController boardController;
         private CircuitController circuitController;
@@ -25,6 +26,29 @@ namespace CircuitRepair.Gameplay
         private void Start()
         {
             ValidateReferences();
+            StartPuzzle();
+        }
+
+        public void RestartPuzzle()
+        {
+            StartPuzzle();
+        }
+
+        [ContextMenu("Restart Puzzle")]
+        private void RestartPuzzleFromContextMenu()
+        {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("Puzzle can only be restarted while the game is running.", this);
+                return;
+            }
+
+            RestartPuzzle();
+        }
+
+        private void StartPuzzle()
+        {
+            UnbindControllers();
 
             Board = PuzzleBoardFactory.Create(puzzleDefinition);
 
@@ -35,24 +59,33 @@ namespace CircuitRepair.Gameplay
             boardController = new BoardController(Board);
             circuitController = new CircuitController(Board);
 
+            BindControllers();
+
+            boardInputController.Initialize(boardController);
+            circuitController.Reevaluate();
+        }
+
+        private void BindControllers()
+        {
             boardController.TileRotated += boardPresenter.RefreshTile;
             boardController.TileRotated += boardConnectionPresenter.RefreshAround;
             boardController.TileRotated += circuitController.HandleTileRotated;
 
             circuitController.EvaluationChanged += boardPresenter.RefreshPowerState;
             circuitController.PuzzleSolved += HandlePuzzleSolved;
-
-            circuitController.Reevaluate();
-            boardInputController.Initialize(boardController);
         }
 
-        private void OnDestroy()
+        private void UnbindControllers()
         {
             if (boardController != null)
             {
                 boardController.TileRotated -= boardPresenter.RefreshTile;
                 boardController.TileRotated -= boardConnectionPresenter.RefreshAround;
-                boardController.TileRotated -= circuitController.HandleTileRotated;
+
+                if (circuitController != null)
+                {
+                    boardController.TileRotated -= circuitController.HandleTileRotated;
+                }
             }
 
             if (circuitController != null)
@@ -60,10 +93,29 @@ namespace CircuitRepair.Gameplay
                 circuitController.EvaluationChanged -= boardPresenter.RefreshPowerState;
                 circuitController.PuzzleSolved -= HandlePuzzleSolved;
             }
+
+            boardController = null;
+            circuitController = null;
+        }
+
+        private void HandlePuzzleSolved()
+        {
+            boardController.SetInteractionEnabled(false);
+            Debug.Log("Puzzle solved.");
+        }
+
+        private void OnDestroy()
+        {
+            UnbindControllers();
         }
 
         private void ValidateReferences()
         {
+            if (puzzleDefinition == null)
+            {
+                throw new InvalidOperationException($"{nameof(puzzleDefinition)} is not assigned in the Inspector.");
+            }
+
             if (boardPresenter == null)
             {
                 throw new InvalidOperationException($"{nameof(boardPresenter)} is not assigned in the Inspector.");
@@ -74,26 +126,15 @@ namespace CircuitRepair.Gameplay
                 throw new InvalidOperationException($"{nameof(boardConnectionPresenter)} is not assigned in the Inspector.");
             }
 
-            if (boardInputController == null)
-            {
-                throw new InvalidOperationException($"{nameof(boardInputController)} is not assigned in the Inspector.");
-            }
-
             if (boardCameraFitter == null)
             {
                 throw new InvalidOperationException($"{nameof(boardCameraFitter)} is not assigned in the Inspector.");
             }
 
-            if (puzzleDefinition == null)
+            if (boardInputController == null)
             {
-                throw new InvalidOperationException($"{nameof(puzzleDefinition)} is not assigned in the Inspector.");
+                throw new InvalidOperationException($"{nameof(boardInputController)} is not assigned in the Inspector.");
             }
-        }
-
-        private void HandlePuzzleSolved()
-        {
-            boardController.SetInteractionEnabled(false);
-            Debug.Log("Puzzle solved.");
         }
     }
 }

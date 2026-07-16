@@ -23,6 +23,9 @@ namespace CircuitRepair.Input
             {
                 throw new InvalidOperationException($"{nameof(worldCamera)} is not assigned in the Inspector.");
             }
+
+            pressedTile = null;
+            pressStartedAt = 0f;
         }
 
         private void Update()

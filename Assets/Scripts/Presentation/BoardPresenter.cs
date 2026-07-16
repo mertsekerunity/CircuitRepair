@@ -84,6 +84,7 @@ namespace CircuitRepair.Presentation
             {
                 if (tileView != null)
                 {
+                    tileView.gameObject.SetActive(false);
                     Destroy(tileView.gameObject);
                 }
             }

@@ -188,6 +188,7 @@ namespace CircuitRepair.Presentation
             {
                 if (jointView != null)
                 {
+                    jointView.gameObject.SetActive(false);
                     Destroy(jointView.gameObject);
                 }
             }
