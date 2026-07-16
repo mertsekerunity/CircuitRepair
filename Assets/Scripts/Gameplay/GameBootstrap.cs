@@ -11,6 +11,7 @@ namespace CircuitRepair.Gameplay
         [SerializeField] private BoardPresenter boardPresenter;
         [SerializeField] private BoardConnectionPresenter boardConnectionPresenter;
         [SerializeField] private BoardInputController boardInputController;
+        [SerializeField] private BoardCameraFitter boardCameraFitter;
 
         private BoardController boardController;
         private CircuitController circuitController;
@@ -21,10 +22,10 @@ namespace CircuitRepair.Gameplay
         {
             ValidateReferences();
 
-            //Board = PrototypeBoardFactory.CreatePresentationTestBoard();
             Board = PrototypeBoardFactory.CreatePlayableTestBoard();
 
             boardPresenter.Present(Board);
+            boardCameraFitter.Fit(boardPresenter);
             boardConnectionPresenter.Present(Board);
 
             boardController = new BoardController(Board);
@@ -72,6 +73,11 @@ namespace CircuitRepair.Gameplay
             if (boardInputController == null)
             {
                 throw new InvalidOperationException($"{nameof(boardInputController)} is not assigned in the Inspector.");
+            }
+
+            if (boardCameraFitter == null)
+            {
+                throw new InvalidOperationException($"{nameof(boardCameraFitter)} is not assigned in the Inspector.");
             }
         }
 

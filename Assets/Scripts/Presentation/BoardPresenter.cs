@@ -138,5 +138,30 @@ namespace CircuitRepair.Presentation
                 pair.Value.SetPowered(result.IsPowered(pair.Key));
             }
         }
+
+        public Vector2 GetBoardWorldSize()
+        {
+            if (Board == null)
+            {
+                throw new InvalidOperationException("Board size cannot be calculated before Present is called.");
+            }
+
+            Vector3 worldScale = tilesRoot.lossyScale;
+
+            float width = Board.Width * tileSpacing * Mathf.Abs(worldScale.x);
+            float height = Board.Height * tileSpacing * Mathf.Abs(worldScale.y);
+
+            return new Vector2(width, height);
+        }
+
+        public Vector3 GetBoardWorldCenter()
+        {
+            if (Board == null)
+            {
+                throw new InvalidOperationException("Board center cannot be calculated before Present is called.");
+            }
+
+            return tilesRoot.position;
+        }
     }
 }
