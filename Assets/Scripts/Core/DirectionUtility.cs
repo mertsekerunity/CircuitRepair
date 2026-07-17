@@ -74,5 +74,32 @@ namespace CircuitRepair.Core
                 Direction.South or
                 Direction.West;
         }
+
+        public static int CountDirections(this Direction directions)
+        {
+            int count = 0;
+
+            if ((directions & Direction.North) != 0)
+            {
+                count++;
+            }
+
+            if ((directions & Direction.East) != 0)
+            {
+                count++;
+            }
+
+            if ((directions & Direction.South) != 0)
+            {
+                count++;
+            }
+
+            if ((directions & Direction.West) != 0)
+            {
+                count++;
+            }
+
+            return count;
+        }
     }
 }
