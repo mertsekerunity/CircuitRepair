@@ -18,8 +18,8 @@ namespace CircuitRepair.Debugging
 
             CircuitEvaluationResult solvedResult = CircuitEvaluator.Evaluate(originalBoard);
 
-            BoardScrambler.Scramble(firstScrambledBoard, TestSeed);
-            BoardScrambler.Scramble(secondScrambledBoard, TestSeed);
+            BoardScrambler.Scramble(firstScrambledBoard, TestSeed, 4, 5);
+            BoardScrambler.Scramble(secondScrambledBoard, TestSeed, 4, 5);
 
             CircuitEvaluationResult scrambledResult = CircuitEvaluator.Evaluate(firstScrambledBoard);
             int changedRotatableTiles = CountChangedRotatableTiles(originalBoard, firstScrambledBoard);
@@ -32,7 +32,7 @@ namespace CircuitRepair.Debugging
             Check("Source remains at Degrees0", firstScrambledBoard.GetTile(new Vector2Int(0, 0)).Rotation == TileRotation.Degrees0, true);
             Check("Bulb remains at Degrees0", firstScrambledBoard.GetTile(new Vector2Int(1, 2)).Rotation == TileRotation.Degrees0, true);
             Check("Ground remains at Degrees0", firstScrambledBoard.GetTile(new Vector2Int(2, 2)).Rotation == TileRotation.Degrees0, true);
-            Check("All six rotatable tiles changed", changedRotatableTiles == 6, true);
+            Check("Four or five rotatable tiles changed", changedRotatableTiles is >= 4 and <= 5, true);
         }
 
         private static int CountChangedRotatableTiles(BoardData originalBoard, BoardData scrambledBoard)
