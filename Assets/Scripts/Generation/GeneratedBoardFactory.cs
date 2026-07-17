@@ -8,6 +8,8 @@ namespace CircuitRepair.Generation
     {
         public static BoardData CreateSolvedBoard(GeneratedPuzzleLayout layout)
         {
+            GeneratedPuzzleLayoutValidator.ThrowIfInvalid(layout);
+
             if (layout == null)
             {
                 throw new ArgumentNullException(nameof(layout));
@@ -35,36 +37,26 @@ namespace CircuitRepair.Generation
 
             if (position == layout.SourcePosition)
             {
-                return CreateSpecialTile(position, TileType.Source, ports);
+                return CreateSpecialTile(position, TileType.Source);
             }
 
             if (position == layout.GroundPosition)
             {
-                return CreateSpecialTile(position, TileType.Ground, ports);
+                return CreateSpecialTile(position, TileType.Ground);
             }
 
             if (layout.IsBulb(position))
             {
-                return CreateSpecialTile(position, TileType.Bulb, ports);
+                return CreateSpecialTile(position, TileType.Bulb);
             }
 
-            if (!WireTileResolver.TryResolve(ports, out TileType type, out TileRotation rotation))
-            {
-                throw new InvalidOperationException($"Ports '{ports}' at position {position} cannot be represented by a supported wire tile.");
-            }
+            WireTileResolver.Resolve(ports, out TileType type, out TileRotation rotation);
 
             return new TileData(position, type, rotation);
         }
 
-        private static TileData CreateSpecialTile(Vector2Int position, TileType type, Direction actualPorts)
+        private static TileData CreateSpecialTile(Vector2Int position, TileType type)
         {
-            Direction expectedPorts = TileRules.GetBasePorts(type);
-
-            if (actualPorts != expectedPorts)
-            {
-                throw new InvalidOperationException($"{type} at position {position} requires ports '{expectedPorts}', but topology contains '{actualPorts}'.");
-            }
-
             return new TileData(position, type);
         }
     }
