@@ -12,11 +12,26 @@ namespace CircuitRepair.Generation
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            GeneratedPuzzleLayout layout = RandomSinglePathPuzzleLayoutGenerator.Generate(settings.Width, settings.Height, settings.LayoutSeed, settings.MinimumBendCount, settings.MaximumBendCount);
+            return Create(settings, settings.LayoutSeed, settings.ScrambleSeed);
+        }
+
+        public static BoardData Create(GeneratedPuzzleSettings settings, int layoutSeed, int scrambleSeed)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            GeneratedPuzzleLayout layout = RandomSinglePathPuzzleLayoutGenerator.Generate(
+                settings.Width,
+                settings.Height,
+                layoutSeed,
+                settings.MinimumBendCount,
+                settings.MaximumBendCount);
 
             BoardData board = GeneratedBoardFactory.CreateSolvedBoard(layout);
 
-            BoardScrambler.Scramble(board, settings.ScrambleSeed);
+            BoardScrambler.Scramble(board, scrambleSeed);
 
             return board;
         }

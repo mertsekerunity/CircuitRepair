@@ -1,9 +1,9 @@
+using System;
 using CircuitRepair.Content;
 using CircuitRepair.Core;
 using CircuitRepair.Generation;
 using CircuitRepair.Input;
 using CircuitRepair.Presentation;
-using System;
 using UnityEngine;
 
 namespace CircuitRepair.Gameplay
@@ -24,16 +24,38 @@ namespace CircuitRepair.Gameplay
         private BoardController boardController;
         private CircuitController circuitController;
 
+        private int currentPuzzleIndex;
+        private int currentLayoutSeed;
+        private int currentScrambleSeed;
+
         public BoardData Board { get; private set; }
+        public int CurrentPuzzleIndex => currentPuzzleIndex;
+        public int CurrentLayoutSeed => currentLayoutSeed;
+        public int CurrentScrambleSeed => currentScrambleSeed;
 
         private void Start()
         {
             ValidateReferences();
+            InitializePuzzleSequence();
             StartPuzzle();
         }
 
         public void RestartPuzzle()
         {
+            StartPuzzle();
+        }
+
+        public void NextPuzzle()
+        {
+            if (puzzleSourceType != PuzzleSourceType.Generated)
+            {
+                Debug.LogWarning("Next Puzzle is only supported for generated puzzles.", this);
+                return;
+            }
+
+            currentPuzzleIndex++;
+
+            UpdateCurrentSeeds();
             StartPuzzle();
         }
 
@@ -47,6 +69,34 @@ namespace CircuitRepair.Gameplay
             }
 
             RestartPuzzle();
+        }
+
+        [ContextMenu("Next Puzzle")]
+        private void NextPuzzleFromContextMenu()
+        {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("The next puzzle can only be started while the game is running.", this);
+                return;
+            }
+
+            NextPuzzle();
+        }
+
+        private void InitializePuzzleSequence()
+        {
+            currentPuzzleIndex = 0;
+
+            if (puzzleSourceType == PuzzleSourceType.Generated)
+            {
+                UpdateCurrentSeeds();
+            }
+        }
+
+        private void UpdateCurrentSeeds()
+        {
+            currentLayoutSeed = unchecked(generatedPuzzleSettings.LayoutSeed + currentPuzzleIndex);
+            currentScrambleSeed = unchecked(generatedPuzzleSettings.ScrambleSeed + currentPuzzleIndex);
         }
 
         private void StartPuzzle()
@@ -66,6 +116,8 @@ namespace CircuitRepair.Gameplay
 
             boardInputController.Initialize(boardController);
             circuitController.Reevaluate();
+
+            LogPuzzleStarted();
         }
 
         private BoardData CreateBoard()
@@ -73,7 +125,12 @@ namespace CircuitRepair.Gameplay
             return puzzleSourceType switch
             {
                 PuzzleSourceType.Authored => PuzzleBoardFactory.Create(puzzleDefinition),
-                PuzzleSourceType.Generated => GeneratedPuzzleBoardFactory.Create(generatedPuzzleSettings),
+
+                PuzzleSourceType.Generated => GeneratedPuzzleBoardFactory.Create(
+                    generatedPuzzleSettings,
+                    currentLayoutSeed,
+                    currentScrambleSeed),
+
                 _ => throw new ArgumentOutOfRangeException(nameof(puzzleSourceType), puzzleSourceType, "Unsupported puzzle source type.")
             };
         }
@@ -114,7 +171,33 @@ namespace CircuitRepair.Gameplay
         private void HandlePuzzleSolved()
         {
             boardController.SetInteractionEnabled(false);
-            Debug.Log("Puzzle solved.");
+
+            if (puzzleSourceType == PuzzleSourceType.Generated)
+            {
+                Debug.Log(
+                    $"Puzzle solved. Index: {currentPuzzleIndex}, " +
+                    $"Layout Seed: {currentLayoutSeed}, " +
+                    $"Scramble Seed: {currentScrambleSeed}.",
+                    this);
+
+                return;
+            }
+
+            Debug.Log("Puzzle solved.", this);
+        }
+
+        private void LogPuzzleStarted()
+        {
+            if (puzzleSourceType != PuzzleSourceType.Generated)
+            {
+                return;
+            }
+
+            Debug.Log(
+                $"Puzzle started. Index: {currentPuzzleIndex}, " +
+                $"Layout Seed: {currentLayoutSeed}, " +
+                $"Scramble Seed: {currentScrambleSeed}.",
+                this);
         }
 
         private void OnDestroy()
