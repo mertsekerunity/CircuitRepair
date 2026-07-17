@@ -539,7 +539,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1551093142}
   - component: {fileID: 1551093143}
-  - component: {fileID: 1551093144}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -575,25 +574,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2333579c351e712488d56a185e844698, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CircuitRepair.Gameplay.GameBootstrap
+  puzzleSourceType: 1
   puzzleDefinition: {fileID: 11400000, guid: f4f2ed8712e19704dbc03adb8589577b, type: 2}
+  generatedPuzzleSettings:
+    width: 5
+    height: 5
+    layoutSeed: 12345
+    scrambleSeed: 67890
   boardPresenter: {fileID: 126046834}
   boardConnectionPresenter: {fileID: 481769496}
   boardCameraFitter: {fileID: 519420033}
   boardInputController: {fileID: 624369122}
---- !u!114 &1551093144
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1551093141}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48f6d183dc310894e91050a8b6d189ae, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RandomPuzzleLayoutStressDebugRunner
-  firstSeed: 0
-  seedCount: 1000
 --- !u!1 &1862870390
 GameObject:
   m_ObjectHideFlags: 0

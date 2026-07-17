@@ -31,8 +31,8 @@ namespace CircuitRepair.Debugging
 
                 try
                 {
-                    GeneratedPuzzleLayout firstLayout = RandomPuzzleLayoutGenerator.Generate(width, height, seed);
-                    GeneratedPuzzleLayout secondLayout = RandomPuzzleLayoutGenerator.Generate(width, height, seed);
+                    GeneratedPuzzleLayout firstLayout = RandomPuzzleLayoutGenerator.Generate(width, height, seed, 6, 10);
+                    GeneratedPuzzleLayout secondLayout = RandomPuzzleLayoutGenerator.Generate(width, height, seed, 6, 10);
 
                     IReadOnlyList<string> errors = GeneratedPuzzleLayoutValidator.GetErrors(firstLayout);
 
@@ -72,6 +72,12 @@ namespace CircuitRepair.Debugging
                     if (tJunctionCount % 2 != 0)
                     {
                         ReportFailure(width, height, seed, $"The T-junction count was odd: {tJunctionCount}.");
+                        return;
+                    }
+
+                    if (tJunctionCount < 6 || tJunctionCount > 10)
+                    {
+                        ReportFailure(width, height, seed, $"T-junction count {tJunctionCount} is outside the configured range.");
                         return;
                     }
 

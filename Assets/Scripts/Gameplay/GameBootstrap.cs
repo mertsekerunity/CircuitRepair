@@ -1,8 +1,9 @@
-using System;
 using CircuitRepair.Content;
 using CircuitRepair.Core;
+using CircuitRepair.Generation;
 using CircuitRepair.Input;
 using CircuitRepair.Presentation;
+using System;
 using UnityEngine;
 
 namespace CircuitRepair.Gameplay
@@ -10,7 +11,9 @@ namespace CircuitRepair.Gameplay
     public sealed class GameBootstrap : MonoBehaviour
     {
         [Header("Content")]
+        [SerializeField] private PuzzleSourceType puzzleSourceType = PuzzleSourceType.Authored;
         [SerializeField] private PuzzleDefinition puzzleDefinition;
+        [SerializeField] private GeneratedPuzzleSettings generatedPuzzleSettings = new();
 
         [Header("Scene References")]
         [SerializeField] private BoardPresenter boardPresenter;
@@ -50,7 +53,7 @@ namespace CircuitRepair.Gameplay
         {
             UnbindControllers();
 
-            Board = PuzzleBoardFactory.Create(puzzleDefinition);
+            Board = CreateBoard();
 
             boardPresenter.Present(Board);
             boardCameraFitter.Fit(boardPresenter);
@@ -63,6 +66,16 @@ namespace CircuitRepair.Gameplay
 
             boardInputController.Initialize(boardController);
             circuitController.Reevaluate();
+        }
+
+        private BoardData CreateBoard()
+        {
+            return puzzleSourceType switch
+            {
+                PuzzleSourceType.Authored => PuzzleBoardFactory.Create(puzzleDefinition),
+                PuzzleSourceType.Generated => GeneratedPuzzleBoardFactory.Create(generatedPuzzleSettings),
+                _ => throw new ArgumentOutOfRangeException(nameof(puzzleSourceType), puzzleSourceType, "Unsupported puzzle source type.")
+            };
         }
 
         private void BindControllers()
@@ -111,9 +124,26 @@ namespace CircuitRepair.Gameplay
 
         private void ValidateReferences()
         {
-            if (puzzleDefinition == null)
+            switch (puzzleSourceType)
             {
-                throw new InvalidOperationException($"{nameof(puzzleDefinition)} is not assigned in the Inspector.");
+                case PuzzleSourceType.Authored:
+                    if (puzzleDefinition == null)
+                    {
+                        throw new InvalidOperationException($"{nameof(puzzleDefinition)} is not assigned for the authored puzzle source.");
+                    }
+
+                    break;
+
+                case PuzzleSourceType.Generated:
+                    if (generatedPuzzleSettings == null)
+                    {
+                        throw new InvalidOperationException($"{nameof(generatedPuzzleSettings)} is not assigned for the generated puzzle source.");
+                    }
+
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(puzzleSourceType), puzzleSourceType, "Unsupported puzzle source type.");
             }
 
             if (boardPresenter == null)

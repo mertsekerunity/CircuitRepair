@@ -11,8 +11,8 @@ namespace CircuitRepair.Debugging
 
         private void Start()
         {
-            GeneratedPuzzleLayout firstLayout = RandomPuzzleLayoutGenerator.Generate(5, 5, TestSeed);
-            GeneratedPuzzleLayout secondLayout = RandomPuzzleLayoutGenerator.Generate(5, 5, TestSeed);
+            GeneratedPuzzleLayout firstLayout = RandomPuzzleLayoutGenerator.Generate(5, 5, TestSeed, 6, 10);
+            GeneratedPuzzleLayout secondLayout = RandomPuzzleLayoutGenerator.Generate(5, 5, TestSeed, 6, 10);
 
             IReadOnlyList<string> errors = GeneratedPuzzleLayoutValidator.GetErrors(firstLayout);
             BoardData solvedBoard = GeneratedBoardFactory.CreateSolvedBoard(firstLayout);

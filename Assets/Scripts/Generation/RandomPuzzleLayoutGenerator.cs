@@ -17,7 +17,7 @@ namespace CircuitRepair.Generation
             Direction.West
         };
 
-        public static GeneratedPuzzleLayout Generate(int width, int height, int seed)
+        public static GeneratedPuzzleLayout Generate(int width, int height, int seed, int minimumTJunctionCount, int maximumTJunctionCount)
         {
             if (width < 3)
             {
@@ -28,6 +28,8 @@ namespace CircuitRepair.Generation
             {
                 throw new ArgumentOutOfRangeException(nameof(height), height, "Generated puzzle height must be at least three.");
             }
+
+            ValidateTJunctionRange(minimumTJunctionCount, maximumTJunctionCount);
 
             System.Random random = new System.Random(seed);
             Vector2Int sourcePosition = Vector2Int.zero;
@@ -43,6 +45,18 @@ namespace CircuitRepair.Generation
                 RestrictPorts(topology, bulbPosition, Direction.West | Direction.East);
 
                 if (!TryRemoveUnsupportedConnections(topology, sourcePosition, groundPosition, random))
+                {
+                    continue;
+                }
+
+                int currentTJunctionCount = CountTilesWithDegree(topology, 3);
+
+                if (!TryChooseTargetTJunctionCount(currentTJunctionCount, minimumTJunctionCount, maximumTJunctionCount, random, out int targetTJunctionCount))
+                {
+                    continue;
+                }
+
+                if (!TryReduceTJunctionCount(topology, sourcePosition, targetTJunctionCount, random))
                 {
                     continue;
                 }
@@ -284,6 +298,132 @@ namespace CircuitRepair.Generation
                 int swapIndex = random.Next(i + 1);
                 (values[i], values[swapIndex]) = (values[swapIndex], values[i]);
             }
+        }
+
+        private static void ValidateTJunctionRange(int minimumCount, int maximumCount)
+        {
+            if (minimumCount < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(minimumCount), minimumCount, "Minimum T-junction count cannot be negative.");
+            }
+
+            if (maximumCount < minimumCount)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maximumCount), maximumCount, "Maximum T-junction count cannot be lower than the minimum.");
+            }
+
+            int firstEvenCount = minimumCount % 2 == 0 ? minimumCount : minimumCount + 1;
+
+            if (firstEvenCount > maximumCount)
+            {
+                throw new ArgumentException("The T-junction range must contain at least one even number.");
+            }
+        }
+
+        private static bool TryChooseTargetTJunctionCount(int currentCount, int minimumCount, int maximumCount, System.Random random, out int targetCount)
+        {
+            int minimumEvenCount = minimumCount % 2 == 0 ? minimumCount : minimumCount + 1;
+
+            int cappedMaximum = Mathf.Min(maximumCount, currentCount);
+            int maximumEvenCount = cappedMaximum % 2 == 0 ? cappedMaximum : cappedMaximum - 1;
+
+            if (minimumEvenCount > maximumEvenCount)
+            {
+                targetCount = default;
+                return false;
+            }
+
+            int optionCount = ((maximumEvenCount - minimumEvenCount) / 2) + 1;
+            targetCount = minimumEvenCount + random.Next(optionCount) * 2;
+
+            return true;
+        }
+
+        private static bool TryReduceTJunctionCount(CircuitTopology topology, Vector2Int sourcePosition, int targetCount, System.Random random)
+        {
+            while (CountTilesWithDegree(topology, 3) > targetCount)
+            {
+                List<(Vector2Int position, Direction direction)> candidateConnections = GetTJunctionConnections(topology);
+                Shuffle(candidateConnections, random);
+
+                bool removedConnection = false;
+
+                foreach ((Vector2Int position, Direction direction) in candidateConnections)
+                {
+                    topology.Disconnect(position, direction);
+
+                    if (IsFullyConnected(topology, sourcePosition))
+                    {
+                        removedConnection = true;
+                        break;
+                    }
+
+                    topology.Connect(position, direction);
+                }
+
+                if (!removedConnection)
+                {
+                    return false;
+                }
+            }
+
+            return CountTilesWithDegree(topology, 3) == targetCount;
+        }
+
+        private static List<(Vector2Int position, Direction direction)> GetTJunctionConnections(CircuitTopology topology)
+        {
+            List<(Vector2Int position, Direction direction)> connections = new();
+
+            for (int y = 0; y < topology.Height; y++)
+            {
+                for (int x = 0; x < topology.Width; x++)
+                {
+                    Vector2Int position = new Vector2Int(x, y);
+
+                    if (topology.GetDegree(position) != 3)
+                    {
+                        continue;
+                    }
+
+                    TryAddTJunctionConnection(topology, position, Direction.East, connections);
+                    TryAddTJunctionConnection(topology, position, Direction.South, connections);
+                }
+            }
+
+            return connections;
+        }
+
+        private static void TryAddTJunctionConnection(CircuitTopology topology, Vector2Int position, Direction direction, List<(Vector2Int position, Direction direction)> connections)
+        {
+            if (!topology.HasConnection(position, direction))
+            {
+                return;
+            }
+
+            Vector2Int neighbourPosition = position + direction.ToGridOffset();
+
+            if (topology.GetDegree(neighbourPosition) == 3)
+            {
+                connections.Add((position, direction));
+            }
+        }
+
+        private static int CountTilesWithDegree(CircuitTopology topology, int degree)
+        {
+            int count = 0;
+
+            for (int y = 0; y < topology.Height; y++)
+            {
+                for (int x = 0; x < topology.Width; x++)
+                {
+                    if (topology.GetDegree(new Vector2Int(x, y)) == degree)
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            return count;
         }
     }
 }
