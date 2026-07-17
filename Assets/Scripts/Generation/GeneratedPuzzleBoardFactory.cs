@@ -12,7 +12,7 @@ namespace CircuitRepair.Generation
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            GeneratedPuzzleLayout layout = SinglePathPuzzleLayoutGenerator.Generate(settings.Width, settings.Height);
+            GeneratedPuzzleLayout layout = RandomSinglePathPuzzleLayoutGenerator.Generate(settings.Width, settings.Height, settings.LayoutSeed);
             BoardData board = GeneratedBoardFactory.CreateSolvedBoard(layout);
 
             BoardScrambler.Scramble(board, settings.ScrambleSeed);
