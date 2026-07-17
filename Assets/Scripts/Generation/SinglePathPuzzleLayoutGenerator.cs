@@ -17,15 +17,31 @@ namespace CircuitRepair.Generation
 
         public static GeneratedPuzzleLayout Generate(FullGridPath path)
         {
+            if (!TryGenerate(path, out GeneratedPuzzleLayout layout))
+            {
+                throw new InvalidOperationException("No horizontal bulb position could be found within the allowed middle path range.");
+            }
+
+            return layout;
+        }
+
+        public static bool TryGenerate(FullGridPath path, out GeneratedPuzzleLayout layout)
+        {
             if (path == null)
             {
                 throw new ArgumentNullException(nameof(path));
             }
 
             CircuitTopology topology = CreateTopology(path);
-            Vector2Int bulbPosition = ChooseBulbPosition(path, topology);
 
-            return new GeneratedPuzzleLayout(topology, path.Start, path.End, new[] { bulbPosition });
+            if (!TryChooseBulbPosition(path, topology, out Vector2Int bulbPosition))
+            {
+                layout = null;
+                return false;
+            }
+
+            layout = new GeneratedPuzzleLayout(topology, path.Start, path.End, new[] { bulbPosition });
+            return true;
         }
 
         private static CircuitTopology CreateTopology(FullGridPath path)
@@ -45,7 +61,7 @@ namespace CircuitRepair.Generation
             return topology;
         }
 
-        private static Vector2Int ChooseBulbPosition(FullGridPath path, CircuitTopology topology)
+        private static bool TryChooseBulbPosition(FullGridPath path, CircuitTopology topology, out Vector2Int bulbPosition)
         {
             int lastPathIndex = path.Count - 1;
             int minimumIndex = Mathf.CeilToInt(lastPathIndex * MinimumBulbPathFraction);
@@ -78,10 +94,12 @@ namespace CircuitRepair.Generation
 
             if (bestIndex < 0)
             {
-                throw new InvalidOperationException("No horizontal bulb position could be found within the allowed middle path range.");
+                bulbPosition = default;
+                return false;
             }
 
-            return path[bestIndex];
+            bulbPosition = path[bestIndex];
+            return true;
         }
     }
 }
