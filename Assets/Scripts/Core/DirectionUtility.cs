@@ -101,5 +101,30 @@ namespace CircuitRepair.Core
 
             return count;
         }
+
+        public static Direction FromGridOffset(Vector2Int offset)
+        {
+            if (offset == new Vector2Int(0, -1))
+            {
+                return Direction.North;
+            }
+
+            if (offset == new Vector2Int(1, 0))
+            {
+                return Direction.East;
+            }
+
+            if (offset == new Vector2Int(0, 1))
+            {
+                return Direction.South;
+            }
+
+            if (offset == new Vector2Int(-1, 0))
+            {
+                return Direction.West;
+            }
+
+            throw new ArgumentOutOfRangeException(nameof(offset), offset, "Grid offset must represent exactly one cardinal step.");
+        }
     }
 }
