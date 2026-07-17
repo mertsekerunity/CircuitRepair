@@ -595,12 +595,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1551093141}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ac273d7a77802dd40b2060a189e00765, type: 3}
+  m_Script: {fileID: 11500000, guid: c5d8e5bec6cf4fc458e6a1e56b04caa0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CircuitRepair.Debugging.BendBenchmarkDebugRunner
+  m_EditorClassIdentifier: Assembly-CSharp::CircuitRepair.Debugging.RandomSinglePathPuzzleStressDebugRunner
   firstLayoutSeed: 0
-  seedsToScan: 5000
-  seedsPerBendCount: 3
+  seedCount: 1000
 --- !u!1 &1862870390
 GameObject:
   m_ObjectHideFlags: 0

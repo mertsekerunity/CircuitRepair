@@ -8,6 +8,9 @@ namespace CircuitRepair.Debugging
 {
     public sealed class RandomSinglePathPuzzleStressDebugRunner : MonoBehaviour
     {
+        private const int MinimumScrambledTileCount = 16;
+        private const int MaximumScrambledTileCount = 20;
+
         [SerializeField] private int firstLayoutSeed;
         [SerializeField, Min(1)] private int seedCount = 1000;
 
@@ -27,6 +30,10 @@ namespace CircuitRepair.Debugging
             int minimumBulbDistance = int.MaxValue;
             int maximumBulbDistance = 0;
             int totalBulbDistance = 0;
+
+            int minimumChangedTileCount = int.MaxValue;
+            int maximumChangedTileCount = 0;
+            int totalChangedTileCount = 0;
 
             for (int offset = 0; offset < seedCount; offset++)
             {
@@ -61,9 +68,33 @@ namespace CircuitRepair.Debugging
                         return;
                     }
 
-                    BoardData scrambledBoard = GeneratedBoardFactory.CreateSolvedBoard(firstLayout);
-                    BoardScrambler.Scramble(scrambledBoard, scrambleSeed);
-                    CircuitEvaluationResult scrambledResult = CircuitEvaluator.Evaluate(scrambledBoard);
+                    BoardData firstScrambledBoard = GeneratedBoardFactory.CreateSolvedBoard(firstLayout);
+                    BoardData secondScrambledBoard = GeneratedBoardFactory.CreateSolvedBoard(firstLayout);
+
+                    BoardScrambler.Scramble(firstScrambledBoard, scrambleSeed, MinimumScrambledTileCount, MaximumScrambledTileCount);
+                    BoardScrambler.Scramble(secondScrambledBoard, scrambleSeed, MinimumScrambledTileCount, MaximumScrambledTileCount);
+
+                    int changedTileCount = CountChangedRotatableTiles(solvedBoard, firstScrambledBoard);
+
+                    if (changedTileCount < MinimumScrambledTileCount || changedTileCount > MaximumScrambledTileCount)
+                    {
+                        ReportFailure(
+                            width,
+                            height,
+                            layoutSeed,
+                            $"Changed tile count {changedTileCount} is outside the configured range " +
+                            $"{MinimumScrambledTileCount}-{MaximumScrambledTileCount}.");
+
+                        return;
+                    }
+
+                    if (!HaveMatchingRotations(firstScrambledBoard, secondScrambledBoard))
+                    {
+                        ReportFailure(width, height, layoutSeed, "The same scramble seed produced different rotations.");
+                        return;
+                    }
+
+                    CircuitEvaluationResult scrambledResult = CircuitEvaluator.Evaluate(firstScrambledBoard);
 
                     if (scrambledResult.IsSolved)
                     {
@@ -81,6 +112,10 @@ namespace CircuitRepair.Debugging
                     minimumBulbDistance = Mathf.Min(minimumBulbDistance, bulbDistance);
                     maximumBulbDistance = Mathf.Max(maximumBulbDistance, bulbDistance);
                     totalBulbDistance += bulbDistance;
+
+                    minimumChangedTileCount = Mathf.Min(minimumChangedTileCount, changedTileCount);
+                    maximumChangedTileCount = Mathf.Max(maximumChangedTileCount, changedTileCount);
+                    totalChangedTileCount += changedTileCount;
                 }
                 catch (Exception exception)
                 {
@@ -94,11 +129,13 @@ namespace CircuitRepair.Debugging
 
             float averageBendCount = (float)totalBendCount / seedCount;
             float averageBulbDistance = (float)totalBulbDistance / seedCount;
+            float averageChangedTileCount = (float)totalChangedTileCount / seedCount;
 
             Debug.Log(
                 $"PASS | {width}x{height} | Seeds: {seedCount} | " +
                 $"Bends Min/Avg/Max: {minimumBendCount}/{averageBendCount:F2}/{maximumBendCount} | " +
                 $"Bulb Distance Min/Avg/Max: {minimumBulbDistance}/{averageBulbDistance:F2}/{maximumBulbDistance} | " +
+                $"Changed Tiles Min/Avg/Max: {minimumChangedTileCount}/{averageChangedTileCount:F2}/{maximumChangedTileCount} | " +
                 $"Time: {stopwatch.ElapsedMilliseconds} ms",
                 this);
         }
@@ -147,6 +184,51 @@ namespace CircuitRepair.Debugging
             }
 
             return true;
+        }
+
+        private static bool HaveMatchingRotations(BoardData firstBoard, BoardData secondBoard)
+        {
+            if (firstBoard.Width != secondBoard.Width || firstBoard.Height != secondBoard.Height)
+            {
+                return false;
+            }
+
+            for (int y = 0; y < firstBoard.Height; y++)
+            {
+                for (int x = 0; x < firstBoard.Width; x++)
+                {
+                    Vector2Int position = new Vector2Int(x, y);
+
+                    if (firstBoard.GetTile(position).Rotation != secondBoard.GetTile(position).Rotation)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private static int CountChangedRotatableTiles(BoardData solvedBoard, BoardData scrambledBoard)
+        {
+            int changedCount = 0;
+
+            for (int y = 0; y < solvedBoard.Height; y++)
+            {
+                for (int x = 0; x < solvedBoard.Width; x++)
+                {
+                    Vector2Int position = new Vector2Int(x, y);
+                    TileData solvedTile = solvedBoard.GetTile(position);
+                    TileData scrambledTile = scrambledBoard.GetTile(position);
+
+                    if (solvedTile.IsRotatable && solvedTile.Rotation != scrambledTile.Rotation)
+                    {
+                        changedCount++;
+                    }
+                }
+            }
+
+            return changedCount;
         }
 
         private static int CountTilesOfType(BoardData board, TileType type)
