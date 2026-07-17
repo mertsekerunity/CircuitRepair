@@ -14,6 +14,9 @@ namespace CircuitRepair.Debugging
         [SerializeField] private int firstLayoutSeed;
         [SerializeField, Min(1)] private int seedCount = 1000;
 
+        [SerializeField, Min(0)] private int minimumBendCount = 14;
+        [SerializeField, Min(0)] private int maximumBendCount = 18;
+
         private void Start()
         {
             RunStressTest(5, 5);
@@ -23,8 +26,8 @@ namespace CircuitRepair.Debugging
         {
             System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-            int minimumBendCount = int.MaxValue;
-            int maximumBendCount = 0;
+            int minimumObservedBendCount = int.MaxValue;
+            int maximumObservedBendCount = 0;
             int totalBendCount = 0;
 
             int minimumBulbDistance = int.MaxValue;
@@ -42,8 +45,19 @@ namespace CircuitRepair.Debugging
 
                 try
                 {
-                    GeneratedPuzzleLayout firstLayout = RandomSinglePathPuzzleLayoutGenerator.Generate(width, height, layoutSeed);
-                    GeneratedPuzzleLayout secondLayout = RandomSinglePathPuzzleLayoutGenerator.Generate(width, height, layoutSeed);
+                    GeneratedPuzzleLayout firstLayout = RandomSinglePathPuzzleLayoutGenerator.Generate(
+                        width,
+                        height,
+                        layoutSeed,
+                        minimumBendCount,
+                        maximumBendCount);
+
+                    GeneratedPuzzleLayout secondLayout = RandomSinglePathPuzzleLayoutGenerator.Generate(
+                        width,
+                        height,
+                        layoutSeed,
+                        minimumBendCount,
+                        maximumBendCount);
 
                     IReadOnlyList<string> errors = GeneratedPuzzleLayoutValidator.GetErrors(firstLayout);
 
@@ -103,10 +117,22 @@ namespace CircuitRepair.Debugging
                     }
 
                     int bendCount = CountTilesOfType(solvedBoard, TileType.Bend);
+
+                    if (bendCount < minimumBendCount || bendCount > maximumBendCount)
+                    {
+                        ReportFailure(
+                            width,
+                            height,
+                            layoutSeed,
+                            $"Bend count {bendCount} is outside the configured range {minimumBendCount}-{maximumBendCount}.");
+
+                        return;
+                    }
+
                     int bulbDistance = GetDistanceFromSourceToBulb(firstLayout);
 
-                    minimumBendCount = Mathf.Min(minimumBendCount, bendCount);
-                    maximumBendCount = Mathf.Max(maximumBendCount, bendCount);
+                    minimumObservedBendCount = Mathf.Min(minimumObservedBendCount, bendCount);
+                    maximumObservedBendCount = Mathf.Max(maximumObservedBendCount, bendCount);
                     totalBendCount += bendCount;
 
                     minimumBulbDistance = Mathf.Min(minimumBulbDistance, bulbDistance);
@@ -133,7 +159,7 @@ namespace CircuitRepair.Debugging
 
             Debug.Log(
                 $"PASS | {width}x{height} | Seeds: {seedCount} | " +
-                $"Bends Min/Avg/Max: {minimumBendCount}/{averageBendCount:F2}/{maximumBendCount} | " +
+                $"Bends Min/Avg/Max: {minimumObservedBendCount}/{averageBendCount:F2}/{maximumObservedBendCount} | " +
                 $"Bulb Distance Min/Avg/Max: {minimumBulbDistance}/{averageBulbDistance:F2}/{maximumBulbDistance} | " +
                 $"Changed Tiles Min/Avg/Max: {minimumChangedTileCount}/{averageChangedTileCount:F2}/{maximumChangedTileCount} | " +
                 $"Time: {stopwatch.ElapsedMilliseconds} ms",

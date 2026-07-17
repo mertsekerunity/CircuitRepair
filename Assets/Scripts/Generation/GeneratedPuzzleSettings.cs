@@ -13,9 +13,15 @@ namespace CircuitRepair.Generation
         [SerializeField] private int layoutSeed = 12345;
         [SerializeField] private int scrambleSeed = 67890;
 
+        [Header("Path")]
+        [SerializeField, Min(0)] private int minimumBendCount = 14;
+        [SerializeField, Min(0)] private int maximumBendCount = 18;
+
         public int Width => width;
         public int Height => height;
         public int LayoutSeed => layoutSeed;
         public int ScrambleSeed => scrambleSeed;
+        public int MinimumBendCount => minimumBendCount;
+        public int MaximumBendCount => maximumBendCount;
     }
 }
