@@ -5,6 +5,14 @@ namespace CircuitRepair.Core
 {
     public static class DirectionUtility
     {
+        public static readonly Direction[] CardinalDirections =
+        {
+            Direction.North,
+            Direction.East,
+            Direction.South,
+            Direction.West
+        };
+
         public static Direction RotateDirectionsClockwise(this Direction directions, int quarterTurns = 1)
         {
             quarterTurns = ((quarterTurns % 4) + 4) % 4;
