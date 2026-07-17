@@ -71,6 +71,22 @@ namespace CircuitRepair.Generation
             ports[neighbourPosition.x, neighbourPosition.y] |= direction.Opposite();
         }
 
+        public void Disconnect(Vector2Int position, Direction direction)
+        {
+            ValidatePosition(position);
+            ValidateCardinalDirection(direction);
+
+            Vector2Int neighbourPosition = position + direction.ToGridOffset();
+
+            if (!IsInside(neighbourPosition))
+            {
+                throw new InvalidOperationException($"Cannot disconnect {position} toward {direction} because the neighbour is outside the topology.");
+            }
+
+            ports[position.x, position.y] &= ~direction;
+            ports[neighbourPosition.x, neighbourPosition.y] &= ~direction.Opposite();
+        }
+
         private void ValidatePosition(Vector2Int position)
         {
             if (!IsInside(position))
