@@ -579,7 +579,7 @@ MonoBehaviour:
   generatedPuzzleSettings:
     width: 5
     height: 5
-    layoutSeed: 12345
+    layoutSeed: 12355
     scrambleSeed: 67890
     minimumBendCount: 14
     maximumBendCount: 18
