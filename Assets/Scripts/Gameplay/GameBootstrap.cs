@@ -33,6 +33,13 @@ namespace CircuitRepair.Gameplay
         public int CurrentLayoutSeed => currentLayoutSeed;
         public int CurrentScrambleSeed => currentScrambleSeed;
 
+        private void Awake()
+        {
+        #if UNITY_ANDROID || UNITY_IOS
+            Application.targetFrameRate = 60;
+        #endif
+        }
+
         private void Start()
         {
             ValidateReferences();
@@ -54,6 +61,26 @@ namespace CircuitRepair.Gameplay
             }
 
             currentPuzzleIndex++;
+
+            UpdateCurrentSeeds();
+            StartPuzzle();
+        }
+
+        public void PreviousPuzzle()
+        {
+            if (puzzleSourceType != PuzzleSourceType.Generated)
+            {
+                Debug.LogWarning("Previous Puzzle is only supported for generated puzzles.", this);
+                return;
+            }
+
+            if (currentPuzzleIndex <= 0)
+            {
+                Debug.LogWarning("The first generated puzzle is already active.", this);
+                return;
+            }
+
+            currentPuzzleIndex--;
 
             UpdateCurrentSeeds();
             StartPuzzle();
@@ -81,6 +108,18 @@ namespace CircuitRepair.Gameplay
             }
 
             NextPuzzle();
+        }
+
+        [ContextMenu("Previous Puzzle")]
+        private void PreviousPuzzleFromContextMenu()
+        {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("The previous puzzle can only be started while the game is running.", this);
+                return;
+            }
+
+            PreviousPuzzle();
         }
 
         private void InitializePuzzleSequence()
