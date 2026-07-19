@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace CircuitRepair.Core
@@ -6,22 +7,25 @@ namespace CircuitRepair.Core
     {
         public Vector2Int Position { get; }
         public TileType Type { get; }
+        public int CurrentRating { get; }
 
         public TileRotation Rotation { get; private set; }
 
         public bool IsRotatable => TileRules.IsRotatable(Type);
 
-        public Direction Ports =>
-            TileRules.GetPorts(Type, Rotation);
+        public Direction Ports => TileRules.GetPorts(Type, Rotation);
 
-        public TileData(Vector2Int position, TileType type, TileRotation rotation = TileRotation.Degrees0)
+        public TileData(Vector2Int position, TileType type, TileRotation rotation = TileRotation.Degrees0, int currentRating = 0)
         {
+            if (currentRating < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(currentRating), currentRating, "Current rating cannot be negative.");
+            }
+
             Position = position;
             Type = type;
-
-            Rotation = IsRotatable
-                ? rotation
-                : TileRotation.Degrees0;
+            Rotation = rotation;
+            CurrentRating = currentRating;
         }
 
         public bool HasPort(Direction direction)
@@ -32,7 +36,9 @@ namespace CircuitRepair.Core
         public void RotateClockwise()
         {
             if (!IsRotatable)
+            {
                 return;
+            }
 
             Rotation = (TileRotation)(((int)Rotation + 1) % 4);
         }

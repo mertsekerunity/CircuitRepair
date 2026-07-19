@@ -140,6 +140,19 @@ namespace CircuitRepair.Presentation
             }
         }
 
+        public void RefreshMultiCircuitPowerState(MultiCircuitEvaluationResult result)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            foreach (KeyValuePair<Vector2Int, TileView> pair in tileViews)
+            {
+                pair.Value.SetPowered(result.IsSourceReachable(pair.Key));
+            }
+        }
+
         public Vector2 GetBoardWorldSize()
         {
             if (Board == null)

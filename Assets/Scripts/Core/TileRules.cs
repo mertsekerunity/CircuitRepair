@@ -36,10 +36,7 @@ namespace CircuitRepair.Core
                 TileType.Bulb =>
                     Direction.West | Direction.East,
 
-                _ => throw new ArgumentOutOfRangeException(
-                    nameof(type),
-                    type,
-                    "Tanımsız tile tipi.")
+                _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unsupported tile type.")
             };
         }
 

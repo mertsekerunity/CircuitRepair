@@ -14,7 +14,8 @@ namespace CircuitRepair.Content
             foreach (TileDefinition tileDefinition in definition.Tiles)
             {
                 Vector2Int position = tileDefinition.Position;
-                TileData tile = new TileData(position, tileDefinition.Type, tileDefinition.InitialRotation);
+
+                TileData tile = new TileData(position, tileDefinition.Type, tileDefinition.InitialRotation, tileDefinition.CurrentRating);
 
                 board.SetTile(tile);
             }

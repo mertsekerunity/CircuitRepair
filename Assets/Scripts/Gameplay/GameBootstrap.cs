@@ -23,6 +23,9 @@ namespace CircuitRepair.Gameplay
 
         private BoardController boardController;
         private CircuitController circuitController;
+        private MultiCircuitController multiCircuitController;
+
+        private PuzzleRuleSet currentRuleSet;
 
         private int currentPuzzleIndex;
         private int currentLayoutSeed;
@@ -32,6 +35,7 @@ namespace CircuitRepair.Gameplay
         public int CurrentPuzzleIndex => currentPuzzleIndex;
         public int CurrentLayoutSeed => currentLayoutSeed;
         public int CurrentScrambleSeed => currentScrambleSeed;
+        public PuzzleRuleSet CurrentRuleSet => currentRuleSet;
 
         private void Awake()
         {
@@ -142,6 +146,7 @@ namespace CircuitRepair.Gameplay
         {
             UnbindControllers();
 
+            currentRuleSet = ResolveCurrentRuleSet();
             Board = CreateBoard();
 
             boardPresenter.Present(Board);
@@ -149,13 +154,13 @@ namespace CircuitRepair.Gameplay
             boardConnectionPresenter.Present(Board);
 
             boardController = new BoardController(Board);
-            circuitController = new CircuitController(Board);
 
+            CreateCircuitController();
             BindControllers();
 
             boardInputController.Initialize(boardController);
-            circuitController.Reevaluate();
 
+            ReevaluateCurrentCircuit();
             LogPuzzleStarted();
         }
 
@@ -174,14 +179,53 @@ namespace CircuitRepair.Gameplay
             };
         }
 
+        private PuzzleRuleSet ResolveCurrentRuleSet()
+        {
+            return puzzleSourceType switch
+            {
+                PuzzleSourceType.Authored => puzzleDefinition.RuleSet,
+                PuzzleSourceType.Generated => PuzzleRuleSet.SingleCircuit,
+                _ => throw new ArgumentOutOfRangeException(nameof(puzzleSourceType), puzzleSourceType, "Unsupported puzzle source type.")
+            };
+        }
+
+        private void CreateCircuitController()
+        {
+            switch (currentRuleSet)
+            {
+                case PuzzleRuleSet.SingleCircuit:
+                    circuitController = new CircuitController(Board);
+                    break;
+
+                case PuzzleRuleSet.MultiCircuit:
+                    multiCircuitController = new MultiCircuitController(Board);
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(currentRuleSet), currentRuleSet, "Unsupported puzzle rule set.");
+            }
+        }
+
         private void BindControllers()
         {
             boardController.TileRotated += boardPresenter.RefreshTile;
             boardController.TileRotated += boardConnectionPresenter.RefreshAround;
-            boardController.TileRotated += circuitController.HandleTileRotated;
 
-            circuitController.EvaluationChanged += boardPresenter.RefreshPowerState;
-            circuitController.PuzzleSolved += HandlePuzzleSolved;
+            if (circuitController != null)
+            {
+                boardController.TileRotated += circuitController.HandleTileRotated;
+
+                circuitController.EvaluationChanged += boardPresenter.RefreshPowerState;
+                circuitController.PuzzleSolved += HandlePuzzleSolved;
+            }
+
+            if (multiCircuitController != null)
+            {
+                boardController.TileRotated += multiCircuitController.HandleTileRotated;
+
+                multiCircuitController.EvaluationChanged += boardPresenter.RefreshMultiCircuitPowerState;
+                multiCircuitController.PuzzleSolved += HandlePuzzleSolved;
+            }
         }
 
         private void UnbindControllers()
@@ -195,6 +239,11 @@ namespace CircuitRepair.Gameplay
                 {
                     boardController.TileRotated -= circuitController.HandleTileRotated;
                 }
+
+                if (multiCircuitController != null)
+                {
+                    boardController.TileRotated -= multiCircuitController.HandleTileRotated;
+                }
             }
 
             if (circuitController != null)
@@ -203,8 +252,32 @@ namespace CircuitRepair.Gameplay
                 circuitController.PuzzleSolved -= HandlePuzzleSolved;
             }
 
+            if (multiCircuitController != null)
+            {
+                multiCircuitController.EvaluationChanged -= boardPresenter.RefreshMultiCircuitPowerState;
+                multiCircuitController.PuzzleSolved -= HandlePuzzleSolved;
+            }
+
             boardController = null;
             circuitController = null;
+            multiCircuitController = null;
+        }
+
+        private void ReevaluateCurrentCircuit()
+        {
+            switch (currentRuleSet)
+            {
+                case PuzzleRuleSet.SingleCircuit:
+                    circuitController.Reevaluate();
+                    break;
+
+                case PuzzleRuleSet.MultiCircuit:
+                    multiCircuitController.Reevaluate();
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(currentRuleSet), currentRuleSet, "Unsupported puzzle rule set.");
+            }
         }
 
         private void HandlePuzzleSolved()
@@ -222,21 +295,23 @@ namespace CircuitRepair.Gameplay
                 return;
             }
 
-            Debug.Log("Puzzle solved.", this);
+            Debug.Log($"Authored {currentRuleSet} puzzle solved.", this);
         }
 
         private void LogPuzzleStarted()
         {
-            if (puzzleSourceType != PuzzleSourceType.Generated)
+            if (puzzleSourceType == PuzzleSourceType.Generated)
             {
+                Debug.Log(
+                    $"Puzzle started. Index: {currentPuzzleIndex}, " +
+                    $"Layout Seed: {currentLayoutSeed}, " +
+                    $"Scramble Seed: {currentScrambleSeed}.",
+                    this);
+
                 return;
             }
 
-            Debug.Log(
-                $"Puzzle started. Index: {currentPuzzleIndex}, " +
-                $"Layout Seed: {currentLayoutSeed}, " +
-                $"Scramble Seed: {currentScrambleSeed}.",
-                this);
+            Debug.Log($"Authored {currentRuleSet} puzzle started.", this);
         }
 
         private void OnDestroy()

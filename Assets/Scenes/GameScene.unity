@@ -1258,8 +1258,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2333579c351e712488d56a185e844698, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CircuitRepair.Gameplay.GameBootstrap
-  puzzleSourceType: 1
-  puzzleDefinition: {fileID: 11400000, guid: f4f2ed8712e19704dbc03adb8589577b, type: 2}
+  puzzleSourceType: 0
+  puzzleDefinition: {fileID: 11400000, guid: 987ebd989402a4442bb15f4b03e4888c, type: 2}
   generatedPuzzleSettings:
     width: 5
     height: 5
